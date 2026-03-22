@@ -41,7 +41,7 @@ class Vehicle{
 			return vehicleID;
 		}
 		
-		virtual ~Vehicle(){}
+		virtual ~Vehicle(){} // Destructer
 };
 
 int Vehicle::totalvehi=0;
