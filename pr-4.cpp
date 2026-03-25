@@ -1,15 +1,19 @@
 #include <iostream>
 using namespace std;
 
+
+// Base Class
 class BankAccount {
-protected:
+
+private:
     int accountNumber;
     string accountHolderName;
     double balance;
 
 public:
-    BankAccount(int accNo, string name, double bal) {
-        accountNumber = accNo;
+
+    BankAccount(int acc, string name, double bal) {
+        accountNumber = acc;
         accountHolderName = name;
         balance = bal;
     }
@@ -20,27 +24,33 @@ public:
     }
 
     virtual void withdraw(double amount) {
+
         if (amount <= balance) {
             balance -= amount;
             cout << "Withdrawal Successful\n";
-        } else {
+        }
+        else {
             cout << "Insufficient Balance\n";
         }
     }
 
-    virtual void calculateInterest() {
-        cout << "No Interest\n";
+    double getBalance() {
+        return balance;
     }
 
     virtual void displayAccountInfo() {
-        cout << "\nAccount Number: " << accountNumber << endl;
-        cout << "Account Holder: " << accountHolderName << endl;
-        cout << "Balance: " << balance << endl;
+
+        cout << "\n---------------------------\n";
+        cout << "Account Number : " << accountNumber << endl;
+        cout << "Account Holder : " << accountHolderName << endl;
+        cout << "Balance        : " << balance << endl;
     }
 
     int getAccountNumber() {
         return accountNumber;
     }
+
+    virtual void calculateInterest() {}
 
     virtual ~BankAccount() {}
 };
@@ -49,18 +59,29 @@ public:
 
 // Savings Account
 class SavingsAccount : public BankAccount {
+
+private:
     double interestRate;
 
 public:
-    SavingsAccount(int accNo, string name, double bal, double rate)
-        : BankAccount(accNo, name, bal) {
-        interestRate = rate;
+
+    SavingsAccount(int acc, string name, double bal)
+        : BankAccount(acc, name, bal) {
+
+        interestRate = 4.0;
+
+        cout << "Savings Account Created\n";
+        cout << "Bank Interest Rate: 4%\n";
     }
 
-    void calculateInterest() override {
-        double interest = balance * interestRate / 100;
-        balance += interest;
-        cout << "Savings Interest Added: " << interest << endl;
+    void calculateInterest() {
+
+        double interest = getBalance() * interestRate / 100;
+
+        deposit(interest);
+
+        cout << "Savings Interest Added: "
+             << interest << endl;
     }
 };
 
@@ -68,19 +89,27 @@ public:
 
 // Checking Account
 class CheckingAccount : public BankAccount {
+
+private:
     double overdraftLimit;
 
 public:
-    CheckingAccount(int accNo, string name, double bal, double limit)
-        : BankAccount(accNo, name, bal) {
-        overdraftLimit = limit;
+
+    CheckingAccount(int acc, string name, double bal)
+        : BankAccount(acc, name, bal) {
+
+        overdraftLimit = 5000;
+
+        cout << "Checking Account Created\n";
+        cout << "Bank Overdraft Limit: 5000\n";
     }
 
-    void withdraw(double amount) override {
-        if (amount <= balance + overdraftLimit) {
-            balance -= amount;
-            cout << "Withdraw Successful\n";
-        } else {
+    void withdraw(double amount) {
+
+        if (amount <= getBalance() + overdraftLimit) {
+            BankAccount::withdraw(amount);
+        }
+        else {
             cout << "Overdraft Limit Exceeded\n";
         }
     }
@@ -90,33 +119,59 @@ public:
 
 // Fixed Deposit
 class FixedDepositAccount : public BankAccount {
+
+private:
     int term;
     double interestRate;
+    double minimumBalance;
 
 public:
-    FixedDepositAccount(int accNo, string name, double bal, int t, double rate)
-        : BankAccount(accNo, name, bal) {
+
+    FixedDepositAccount(int acc, string name,
+                        double bal, int t)
+        : BankAccount(acc, name, bal) {
+
+        interestRate = 7.0;
+        minimumBalance = 10000;
+
+        cout << "Fixed Deposit Created\n";
+        cout << "Bank Interest Rate: 7%\n";
+        cout << "Minimum Amount: 10000\n";
+        cout << "Minimum Term: 6 Months\n";
+
+        if (bal < minimumBalance)
+            cout << "Warning: Minimum Balance Required\n";
+
+        if (t < 6)
+            cout << "Warning: Minimum Term Required\n";
+
         term = t;
-        interestRate = rate;
     }
 
-    void calculateInterest() override {
-        double interest = balance * interestRate * term / 100;
-        balance += interest;
-        cout << "FD Interest Added: " << interest << endl;
+    void calculateInterest() {
+
+        double interest =
+        getBalance() * interestRate * term / 1200;
+
+        deposit(interest);
+
+        cout << "Fixed Deposit Interest Added: "
+             << interest << endl;
     }
 };
 
 
 
+// Main
 int main() {
 
-    BankAccount* accounts[10];   // Dynamic pointer array
+    BankAccount* accounts[10];
     int count = 0;
     int choice;
 
     do {
-        cout << "\n===== Banking System =====\n";
+
+        cout << "\n====== Banking System ======\n";
         cout << "1. Create Savings Account\n";
         cout << "2. Create Checking Account\n";
         cout << "3. Create Fixed Deposit\n";
@@ -124,110 +179,179 @@ int main() {
         cout << "5. Withdraw\n";
         cout << "6. Display All\n";
         cout << "7. Calculate Interest\n";
+        cout << "8. Search Account\n";
         cout << "0. Exit\n";
-        cout << "Enter choice: ";
-        cin >> choice;
 
-        int accNo;
-        string name;
-        double balance;
+        cout << "Enter Choice: ";
+        cin >> choice;
 
         switch (choice) {
 
         case 1: {
-            double rate;
-            cout << "Enter Account No: ";
-            cin >> accNo;
+
+            int acc;
+            string name;
+            double bal;
+
+            cout << "Enter Account Number: ";
+            cin >> acc;
+
             cout << "Enter Name: ";
             cin >> name;
+
             cout << "Enter Balance: ";
-            cin >> balance;
-            cout << "Enter Interest Rate: ";
-            cin >> rate;
+            cin >> bal;
 
             accounts[count++] =
-                new SavingsAccount(accNo, name, balance, rate);
+            new SavingsAccount(acc, name, bal);
+
             break;
         }
+
 
         case 2: {
-            double limit;
-            cout << "Enter Account No: ";
-            cin >> accNo;
+
+            int acc;
+            string name;
+            double bal;
+
+            cout << "Enter Account Number: ";
+            cin >> acc;
+
             cout << "Enter Name: ";
             cin >> name;
+
             cout << "Enter Balance: ";
-            cin >> balance;
-            cout << "Enter Overdraft Limit: ";
-            cin >> limit;
+            cin >> bal;
 
             accounts[count++] =
-                new CheckingAccount(accNo, name, balance, limit);
+            new CheckingAccount(acc, name, bal);
+
             break;
         }
+
 
         case 3: {
-            int term;
-            double rate;
-            cout << "Enter Account No: ";
-            cin >> accNo;
+
+            int acc, term;
+            string name;
+            double bal;
+
+            cout << "Enter Account Number: ";
+            cin >> acc;
+
             cout << "Enter Name: ";
             cin >> name;
-            cout << "Enter Balance: ";
-            cin >> balance;
-            cout << "Enter Term: ";
+
+            cout << "Enter Amount: ";
+            cin >> bal;
+
+            cout << "Enter Term (Months): ";
             cin >> term;
-            cout << "Enter Interest Rate: ";
-            cin >> rate;
 
             accounts[count++] =
-                new FixedDepositAccount(accNo, name, balance, term, rate);
+            new FixedDepositAccount(acc, name, bal, term);
+
             break;
         }
+
 
         case 4: {
+
             int acc;
             double amt;
+            bool found = false;
 
-            cout << "Enter Account No: ";
+            cout << "Enter Account Number: ";
             cin >> acc;
 
             cout << "Enter Amount: ";
             cin >> amt;
 
             for (int i = 0; i < count; i++) {
-                if (accounts[i]->getAccountNumber() == acc)
+
+                if (accounts[i]->getAccountNumber() == acc) {
                     accounts[i]->deposit(amt);
+                    found = true;
+                    break;
+                }
             }
+
+            if (!found)
+                cout << "Account Not Found\n";
+
             break;
         }
+
 
         case 5: {
+
             int acc;
             double amt;
+            bool found = false;
 
-            cout << "Enter Account No: ";
+            cout << "Enter Account Number: ";
             cin >> acc;
 
             cout << "Enter Amount: ";
             cin >> amt;
 
             for (int i = 0; i < count; i++) {
-                if (accounts[i]->getAccountNumber() == acc)
+
+                if (accounts[i]->getAccountNumber() == acc) {
                     accounts[i]->withdraw(amt);
+                    found = true;
+                    break;
+                }
             }
+
+            if (!found)
+                cout << "Account Not Found\n";
+
             break;
         }
 
-        case 6:
+
+        case 6: {
+
             for (int i = 0; i < count; i++)
                 accounts[i]->displayAccountInfo();
-            break;
 
-        case 7:
+            break;
+        }
+
+
+        case 7: {
+
             for (int i = 0; i < count; i++)
                 accounts[i]->calculateInterest();
+
             break;
+        }
+
+
+        case 8: {
+
+            int acc;
+            bool found = false;
+
+            cout << "Enter Account Number: ";
+            cin >> acc;
+
+            for (int i = 0; i < count; i++) {
+
+                if (accounts[i]->getAccountNumber() == acc) {
+                    accounts[i]->displayAccountInfo();
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+                cout << "Account Not Found\n";
+
+            break;
+        }
 
         }
 
